@@ -29,7 +29,7 @@ resource "google_compute_firewall" "firewall" {
 
   allow {
     protocol = "tcp"
-    ports    = ["80"]
+    ports    = ["80", "22"]
   }
 
   # Allow traffic from anywhere (public)
@@ -55,19 +55,30 @@ resource "google_compute_instance" "vm" {
 
   metadata_startup_script = <<-EOT
     #!/bin/bash
-    set -e
+    set -euxo pipefail
+
+    echo "[startup] Updating system and installing Docker..."
     apt-get update -y
-    apt-get install -y docker.io google-cloud-sdk
+    apt-get install -y docker.io google-cloud-cli
+
     systemctl enable docker
     systemctl start docker
 
-    # Authenticate Docker to Artifact Registry
+    echo "[startup] Authenticating Docker to Artifact Registry..."
     gcloud auth configure-docker us-central1-docker.pkg.dev -q
 
-    # Pull and run your container
+    echo "[startup] Pulling and running container..."
     docker pull us-central1-docker.pkg.dev/${var.project_id}/echo-repo/echo:latest
-    docker run -d --restart always -p 80:8080 \
+
+    # Stop any previous container
+    docker ps -q --filter "name=echo" | xargs -r docker stop || true
+    docker ps -aq --filter "name=echo" | xargs -r docker rm || true
+
+    # Run your Go Echo container
+    docker run -d --name echo --restart always -p 80:8080 \
       us-central1-docker.pkg.dev/${var.project_id}/echo-repo/echo:latest
+
+    echo "[startup] Done!"
   EOT
 
   network_interface {
