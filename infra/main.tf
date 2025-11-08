@@ -57,24 +57,33 @@ resource "google_compute_instance" "vm" {
     #!/bin/bash
     set -euxo pipefail
 
-    echo "[startup] Updating system and installing Docker..."
+    echo "[startup] Updating system and installing Docker + GCloud SDK..."
     apt-get update -y
-    apt-get install -y docker.io google-cloud-cli
+    apt-get install -y apt-transport-https ca-certificates curl gnupg lsb-release
+
+    # Add the Google Cloud SDK repo
+    echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] http://packages.cloud.google.com/apt cloud-sdk main" \
+      | tee /etc/apt/sources.list.d/google-cloud-sdk.list
+
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg \
+      | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
+
+    apt-get update -y
+    apt-get install -y docker.io google-cloud-sdk
 
     systemctl enable docker
     systemctl start docker
 
     echo "[startup] Authenticating Docker to Artifact Registry..."
-    gcloud auth configure-docker us-central1-docker.pkg.dev -q
+    gcloud auth configure-docker us-central1-docker.pkg.dev -q || true
 
     echo "[startup] Pulling and running container..."
-    docker pull us-central1-docker.pkg.dev/${var.project_id}/echo-repo/echo:latest
+    docker pull us-central1-docker.pkg.dev/${var.project_id}/echo-repo/echo:latest || exit 1
 
-    # Stop any previous container
+    # Stop previous container if exists
     docker ps -q --filter "name=echo" | xargs -r docker stop || true
     docker ps -aq --filter "name=echo" | xargs -r docker rm || true
 
-    # Run your Go Echo container
     docker run -d --name echo --restart always -p 80:8080 \
       us-central1-docker.pkg.dev/${var.project_id}/echo-repo/echo:latest
 
