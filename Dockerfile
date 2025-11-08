@@ -17,5 +17,5 @@ FROM scratch
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
 COPY --from=builder /app/binary /
 
-EXPOSE 80
+EXPOSE 8080
 ENTRYPOINT ["/binary"]

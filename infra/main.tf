@@ -66,7 +66,7 @@ resource "google_compute_instance" "vm" {
 
     # Pull and run your container
     docker pull us-central1-docker.pkg.dev/${var.project_id}/echo-repo/echo:latest
-    docker run -d --restart always -p 80:80 \
+    docker run -d --restart always -p 80:8080 \
       us-central1-docker.pkg.dev/${var.project_id}/echo-repo/echo:latest
   EOT
 

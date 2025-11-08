@@ -11,7 +11,7 @@ func main() {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 		}
 	})
-	if err := http.ListenAndServe("", nil); err != nil {
+	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatal(err)
 	}
 }
