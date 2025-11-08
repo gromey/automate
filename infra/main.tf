@@ -61,7 +61,6 @@ resource "google_compute_instance" "vm" {
 
 	snap install docker
 	sleep 10
-	sudo chmod 666 /var/run/docker.sock
 	-sudo groupadd docker
 	sudo usermod -aG docker $(USER)
 
