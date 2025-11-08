@@ -69,10 +69,13 @@ resource "google_compute_instance" "vm" {
       | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
 
     apt-get update -y
-    apt-get install -y docker.io google-cloud-sdk
+    apt-get install -y google-cloud-sdk
 
-    systemctl enable docker
-    systemctl start docker
+	snap install docker
+	sleep 3
+	sudo chmod 666 /var/run/docker.sock
+	-sudo groupadd docker
+	sudo usermod -aG docker $(USER)
 
     echo "[startup] Authenticating Docker to Artifact Registry..."
     gcloud auth configure-docker us-central1-docker.pkg.dev -q || true
