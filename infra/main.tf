@@ -27,6 +27,9 @@ resource "google_compute_firewall" "firewall" {
     ports    = ["80"]
   }
 
+  # Allow traffic from anywhere (public)
+  source_ranges = ["0.0.0.0/0"]
+
   target_tags = ["server"]
 }
 
