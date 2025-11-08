@@ -1,4 +1,9 @@
 terraform {
+  backend "gcs" {
+    bucket = "quickhire-state"
+    prefix = "terraform/state"
+  }
+
   required_providers {
     google = {
       source  = "hashicorp/google"
