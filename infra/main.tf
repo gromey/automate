@@ -40,25 +40,27 @@ resource "google_compute_instance" "vm" {
 
   boot_disk {
     initialize_params {
-      image = var.image
+      image = "ubuntu-os-cloud/ubuntu-2204-lts"
+      size  = 20
     }
   }
 
-  metadata = {
-    google-logging-enabled = "true"
-    google-monitoring-enabled = "true"
-    gce-container-declaration = <<-EOT
-      spec:
-        containers:
-          - name: echo
-            image: us-central1-docker.pkg.dev/${var.project_id}/echo-repo/echo:latest
-            ports:
-              - name: http
-                hostPort: 80
-                containerPort: 8080
-        restartPolicy: Always
-    EOT
-  }
+  metadata_startup_script = <<-EOT
+    #!/bin/bash
+    set -e
+    apt-get update -y
+    apt-get install -y docker.io google-cloud-sdk
+    systemctl enable docker
+    systemctl start docker
+
+    # Authenticate Docker to Artifact Registry
+    gcloud auth configure-docker us-central1-docker.pkg.dev -q
+
+    # Pull and run your container
+    docker pull us-central1-docker.pkg.dev/${var.project_id}/echo-repo/echo:latest
+    docker run -d --restart always -p 80:8080 \
+      us-central1-docker.pkg.dev/${var.project_id}/echo-repo/echo:latest
+  EOT
 
   network_interface {
     network = google_compute_network.vpc_network.name
