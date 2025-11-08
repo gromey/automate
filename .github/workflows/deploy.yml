@@ -41,11 +41,6 @@ jobs:
             -var "credential_file=credentials.json" \
             -var "project_name=echo"
 
-      - name: Output VM IP
-        run: |
-          cd infra
-          terraform output vm_ip
-
       - name: Clean up credentials
         if: always()
         run: rm -f credentials.json infra/credentials.json
