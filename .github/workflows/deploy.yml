@@ -26,18 +26,23 @@ jobs:
           docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/echo-repo/echo:latest .
           docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/echo-repo/echo:latest
 
-#      - name: Apply Terraform
-#        run: |
-#          cd infra
-#          terraform init -input=false
-#          terraform apply -auto-approve \
-#            -var "project_id=${{ secrets.GCP_PROJECT_ID }}" \
-#            -var "credential_file=credentials.json" \
-#            -var "machine_type=e2-micro" \
-#            -var "region=us-central1" \
-#            -var "zone=us-central1-a"
-#
-#      - name: Output VM IP
-#        run: |
-#          cd infra
-#          terraform output vm_ip
+      - name: Write GCP credentials to file
+        run: echo '${{ secrets.GCP_CREDENTIALS }}' > infra/credentials.json
+
+      - name: Apply Terraform
+        run: |
+          cd infra
+          terraform init -input=false
+          terraform apply -auto-approve \
+            -var "project_id=${{ secrets.GCP_PROJECT_ID }}" \
+            -var "credential_file=credentials.json" \
+            -var "project_name=echo"
+
+      - name: Output VM IP
+        run: |
+          cd infra
+          terraform output vm_ip
+
+      - name: Clean up credentials
+        if: always()
+        run: rm -f credentials.json infra/credentials.json
