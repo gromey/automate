@@ -41,6 +41,22 @@ jobs:
             -var "credential_file=credentials.json" \
             -var "project_name=echo"
 
+#      - name: Deploy new container on VM
+#        env:
+#          VM_IP: ${{ steps.tf_output.outputs.vm_ip }}
+#        run: |
+#          echo "${{ secrets.GCP_SSH_KEY }}" > key.pem
+#          chmod 600 key.pem
+#
+#          ssh -o StrictHostKeyChecking=no -i key.pem ubuntu@$VM_IP << 'EOF'
+#          set -eux
+#          sudo docker stop echo || true
+#          sudo docker rm echo || true
+#          sudo docker pull us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/echo-repo/echo:latest
+#          sudo docker run -d --name echo --restart always -p 80:8080 \
+#            us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/echo-repo/echo:latest
+#          EOF
+
       - name: Clean up credentials
         if: always()
         run: rm -f credentials.json infra/credentials.json

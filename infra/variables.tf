@@ -41,7 +41,7 @@ variable "machine_type" {
 variable "image" {
   description = "The image from which to initialize the VM"
   type        = string
-  default     = "cos-cloud/cos-stable"
+  default     = "ubuntu-os-cloud/ubuntu-2204-lts"
 }
 
 # "ubuntu-os-cloud/ubuntu-2204-lts"
