@@ -1,0 +1,43 @@
+name: Deploy to GCP VM
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev -q
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/echo-repo/echo-server:${{ github.sha }} .
+          docker push us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/echo-repo/echo-server:${{ github.sha }}
+
+#      - name: Apply Terraform
+#        run: |
+#          cd infra
+#          terraform init -input=false
+#          terraform apply -auto-approve \
+#            -var "project_id=${{ secrets.GCP_PROJECT_ID }}" \
+#            -var "credential_file=credentials.json" \
+#            -var "machine_type=e2-micro" \
+#            -var "region=us-central1" \
+#            -var "zone=us-central1-a"
+#
+#      - name: Output VM IP
+#        run: |
+#          cd infra
+#          terraform output vm_ip
