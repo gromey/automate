@@ -56,13 +56,13 @@ resource "google_compute_instance" "vm" {
   metadata_startup_script = <<-EOT
     #!/bin/bash
     set -e
-    apt-get update -y
-    apt-get install -y ca-certificates
 
-	snap install docker
-	sleep 10
-	-sudo groupadd docker
-	sudo usermod -aG docker $(USER)
+    sudo apt-get update -y
+    sudo apt-get install -y ca-certificates
+    sudo snap install docker
+	sudo groupadd docker
+	sudo usermod -aG docker $USER
+	sudo chmod 666 /var/run/docker.sock
 
     echo "[startup] Done!"
   EOT
